@@ -48,11 +48,17 @@ Implement a function `index_range` that takes two integer arguments `page` and `
 - Page numbers are 1-indexed
 
 Example:
+```python
+res = index_range(1, 7)
+print(type(res))  # <class 'tuple'>
+print(res)        # (0, 7)
 ```
-bob@dylan:~$ cat 0-main.py
+
+**Test File (`0-main.py`):**
+```python
 #!/usr/bin/env python3
 """
-Main file
+Main file for testing simple helper function
 """
 
 index_range = __import__('0-simple_helper_function').index_range
@@ -64,61 +70,46 @@ print(res)
 res = index_range(page=3, page_size=15)
 print(type(res))
 print(res)
-
-bob@dylan:~$ ./0-main.py
-<class 'tuple'>
-(0, 7)
-<class 'tuple'>
-(30, 45)
-bob@dylan:~$
-```
-
-```python
-res = index_range(1, 7)
-print(type(res))  # <class 'tuple'>
-print(res)        # (0, 7)
 ```
 
 ### 1. Simple Pagination
 **File:** `1-simple_pagination.py`
-
-Copy index_range from the previous task and the following class into your code
-
-```
-import csv
-import math
-from typing import List
-
-
-class Server:
-    """Server class to paginate a database of popular baby names.
-    """
-    DATA_FILE = "Popular_Baby_Names.csv"
-
-    def __init__(self):
-        self.__dataset = None
-
-    def dataset(self) -> List[List]:
-        """Cached dataset
-        """
-        if self.__dataset is None:
-            with open(self.DATA_FILE) as f:
-                reader = csv.reader(f)
-                dataset = [row for row in reader]
-            self.__dataset = dataset[1:]
-
-        return self.__dataset
-
-    def get_page(self, page: int = 1, page_size: int = 10) -> List[List]:
-            pass
-```
 
 Implement a `Server` class with:
 - Dataset loading from CSV
 - `get_page` method for basic pagination
 - Input validation using assertions
 
+**Test File (`1-main.py`):**
+```python
+#!/usr/bin/env python3
+"""
+Main file for testing simple pagination
+"""
 
+Server = __import__('1-simple_pagination').Server
+
+server = Server()
+
+try:
+    should_err = server.get_page(-10, 2)
+except AssertionError:
+    print("AssertionError raised with negative values")
+
+try:
+    should_err = server.get_page(0, 0)
+except AssertionError:
+    print("AssertionError raised with 0")
+
+try:
+    should_err = server.get_page(2, 'Bob')
+except AssertionError:
+    print("AssertionError raised when page and/or page_size are not ints")
+
+print(server.get_page(1, 3))
+print(server.get_page(3, 2))
+print(server.get_page(3000, 100))
+```
 
 ### 2. Hypermedia Pagination
 **File:** `2-hypermedia_pagination.py`
@@ -132,6 +123,26 @@ Extend the `Server` class with:
   - prev_page: number of previous page
   - total_pages: total number of pages
 
+**Test File (`2-main.py`):**
+```python
+#!/usr/bin/env python3
+"""
+Main file for testing hypermedia pagination
+"""
+
+Server = __import__('2-hypermedia_pagination').Server
+
+server = Server()
+
+print(server.get_hyper(1, 2))
+print("---")
+print(server.get_hyper(2, 2))
+print("---")
+print(server.get_hyper(100, 3))
+print("---")
+print(server.get_hyper(3000, 100))
+```
+
 ### 3. Deletion-resilient Hypermedia Pagination
 **File:** `3-hypermedia_del_pagination.py`
 
@@ -139,6 +150,57 @@ Implement deletion-resilient pagination:
 - Handle cases where rows are deleted between queries
 - Ensure users don't miss items when changing pages
 - Return appropriate index information
+
+**Test File (`3-main.py`):**
+```python
+#!/usr/bin/env python3
+"""
+Main file for testing deletion-resilient hypermedia pagination
+"""
+
+Server = __import__('3-hypermedia_del_pagination').Server
+
+server = Server()
+
+server.indexed_dataset()
+
+try:
+    server.get_hyper_index(300000, 100)
+except AssertionError:
+    print("AssertionError raised when out of range")        
+
+index = 3
+page_size = 2
+
+print("Nb items: {}".format(len(server._Server__indexed_dataset)))
+
+# 1- request first index
+res = server.get_hyper_index(index, page_size)
+print(res)
+
+# 2- request next index
+print(server.get_hyper_index(res.get('next_index'), page_size))
+
+# 3- remove the first index
+del server._Server__indexed_dataset[res.get('index')]
+print("Nb items: {}".format(len(server._Server__indexed_dataset)))
+
+# 4- request again the initial index -> first data retrieved is not the same as the first request
+print(server.get_hyper_index(index, page_size))
+
+# 5- request again initial next index -> same data page as the request 2-
+print(server.get_hyper_index(res.get('next_index'), page_size))
+```
+
+## Testing
+
+Each task comes with a corresponding main file for testing. To test a specific task:
+
+1. Make sure the implementation file and test file are in the same directory
+2. Make the test file executable: `chmod +x <test_file.py>`
+3. Run the test: `./<test_file.py>`
+
+Expected outputs are provided in the task descriptions.
 
 ## Usage
 

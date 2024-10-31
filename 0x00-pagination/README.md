@@ -48,6 +48,31 @@ Implement a function `index_range` that takes two integer arguments `page` and `
 - Page numbers are 1-indexed
 
 Example:
+```
+bob@dylan:~$ cat 0-main.py
+#!/usr/bin/env python3
+"""
+Main file
+"""
+
+index_range = __import__('0-simple_helper_function').index_range
+
+res = index_range(1, 7)
+print(type(res))
+print(res)
+
+res = index_range(page=3, page_size=15)
+print(type(res))
+print(res)
+
+bob@dylan:~$ ./0-main.py
+<class 'tuple'>
+(0, 7)
+<class 'tuple'>
+(30, 45)
+bob@dylan:~$
+```
+
 ```python
 res = index_range(1, 7)
 print(type(res))  # <class 'tuple'>
@@ -61,6 +86,8 @@ Implement a `Server` class with:
 - Dataset loading from CSV
 - `get_page` method for basic pagination
 - Input validation using assertions
+
+
 
 ### 2. Hypermedia Pagination
 **File:** `2-hypermedia_pagination.py`
